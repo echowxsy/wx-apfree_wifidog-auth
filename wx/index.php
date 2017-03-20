@@ -1,8 +1,3 @@
-<?php
-$url = "http://192.168.1.1:2060/wifidog/auth?token=bf493qf5nkzuxutc3qtxg7effhw648gf";
-//跳转
-header("Location: ".$url);
-?>
 <!DOCTYPE HTML>
 <html>
 <head lang="zh-CN">
@@ -11,7 +6,7 @@ header("Location: ".$url);
 </head>
 <body>
 	<script type="text/javascript">
-	window.location="http://192.168.1.1:2060/wifidog/auth?token=bf493qf5nkzuxutc3qtxg7effhw648gf"
+	window.location="http://192.168.1.1:2060/wifidog/auth?token=123"
 	</script>
 </body>
 </html>

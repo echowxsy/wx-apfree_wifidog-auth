@@ -1,80 +1,76 @@
 <?php
-    parse_str($_SERVER['QUERY_STRING'], $parseUrl);
-    $token = '';
-    $pattern="1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLOMNOPQRSTUVWXYZ";
-    // for($i=0;$i<32;$i++)
-     for($i=0;$i<2;$i++)
-        $token .= $pattern[ rand(0,35) ];
-    //$url = "http://{$parseUrl['gw_address']}:{$parseUrl['gw_port']}/wifidog/auth?token={$token}";
-     $url = "http://pmgeco.com/wxwifidog/wx/";
+function isMobile(){
+        // 如果有HTTP_X_WAP_PROFILE则一定是移动设备
+        if (isset ($_SERVER['HTTP_X_WAP_PROFILE']))
+        {
+            return true;
+        }
+        // 如果via信息含有wap则一定是移动设备,部分服务商会屏蔽该信息
+        if (isset ($_SERVER['HTTP_VIA']))
+        {
+            // 找不到为flase,否则为true
+            return stristr($_SERVER['HTTP_VIA'], "wap") ? true : false;
+        }
+        // 脑残法，判断手机发送的客户端标志,兼容性有待提高
+        if (isset ($_SERVER['HTTP_USER_AGENT']))
+        {
+            $clientkeywords = array (
+            'nokia',
+            'sony',
+            'ericsson',
+            'mot',
+            'samsung',
+            'htc',
+            'sgh',
+            'lg',
+            'sharp',
+            'sie-',
+            'philips',
+            'panasonic',
+            'alcatel',
+            'lenovo',
+            'iphone',
+            'ipod',
+            'blackberry',
+            'meizu',
+            'android',
+            'netfront',
+            'symbian',
+            'ucweb',
+            'windowsce',
+            'palm',
+            'operamini',
+            'operamobi',
+            'openwave',
+            'nexusone',
+            'cldc',
+            'midp',
+            'wap',
+            'mobile',
+            'ipad'
+            );
+            // 从HTTP_USER_AGENT中查找手机浏览器的关键字
+            if (preg_match("/(" . implode('|', $clientkeywords) . ")/i", strtolower($_SERVER['HTTP_USER_AGENT'])))
+            {
+                return true;
+            }
+        }
+        // 协议法，因为有可能不准确，放到最后判断
+        if (isset ($_SERVER['HTTP_ACCEPT']))
+        {
+            // 如果只支持wml并且不支持html那一定是移动设备
+            // 如果支持wml和html但是wml在html之前则是移动设备
+            if ((strpos($_SERVER['HTTP_ACCEPT'], 'vnd.wap.wml') !== false) && (strpos($_SERVER['HTTP_ACCEPT'], 'text/html') === false || (strpos($_SERVER['HTTP_ACCEPT'], 'vnd.wap.wml') < strpos($_SERVER['HTTP_ACCEPT'], 'text/html'))))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
 
-    $secretkey =  "b12eebfba64c4b9f82fae7c6e21b79c2";//key我也就不删除了，要测试随意 😊
-    $appId = "wx67beb514399c96ec";
-    $shopId = "3697456";
-    $authUrl = $url;
-    $mac = $parseUrl['mac'];
-    $extend = "";
-    // $timestamp = time();
-    function getMillisecond() {
-        list($t1, $t2) = explode(' ', microtime());
-        return $t2  .  ceil( ($t1 * 1000) );
-    }
-    $timestamp = getMillisecond();
-    $ssid  = "PMGWork";
-    $tmp=$appId . $extend . $timestamp . $shopId . $authUrl . $mac . $ssid . $secretkey;
-    $sign = md5($appId . $extend . $timestamp . $shopId . $authUrl . $mac . $ssid . $secretkey);
+if (isMobile())
+    $jump_url=  "http://pmgeco.com/wxwifidog/login/index-phone.php"."?".$_SERVER['QUERY_STRING'];
+else
+    $jump_url=  "http://pmgeco.com/wxwifidog/login/index-pc.php"."?".$_SERVER['QUERY_STRING'];
+header("Location: ".$jump_url);
 ?>
-<!DOCTYPE HTML>
-<html>
-<head lang="zh-CN">
-    <meta charset="UTF-8">
-    <title>黄花旅游</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <meta name="format-detection" content="telephone=no">
-    <link rel="stylesheet" href="http://wifi.weixin.qq.com/resources/css/style-simple-follow.css"/>
-    <!-- <script src="clipboard.min.js"></script> -->
-   <script type="text/javascript" src="http://wifi.weixin.qq.com/resources/js/wechatticket/wechatutil.js" ></script>
-</head>
-<body class="mod-simple-follow">
-<div class="mod-simple-follow-page">
-    <div class="mod-simple-follow-page__banner">
-        <img class="mod-simple-follow-page__banner-bg" src="http://wifi.weixin.qq.com/resources/images/background.jpg" alt=""/>
-        <div class="mod-simple-follow-page__img-shadow"></div>
-        <div class="mod-simple-follow-page__logo">
-            <img class="mod-simple-follow-page__logo-img" src="http://wifi.weixin.qq.com/resources/images/t.weixin.logo.png" alt=""/>
-            <p class="mod-simple-follow-page__logo-name"></p>
-            <p class="mod-simple-follow-page__logo-welcome">欢迎您</p>
-        </div>
-    </div>
-    <div class="mod-simple-follow-page__attention">
-        <p class="mod-simple-follow-page__attention-txt">欢迎使用微信连Wi-Fi</p>
-        <a class="mod-simple-follow-page__attention-btn btn" onclick="callWechatBrowser()" data-clipboard-text="黄花旅游">打开微信关注公众号</a>
-    </div>
-  
-    <script type="text/javascript">
-    // new Clipboard('.btn');
-    
-    function callWechatBrowser(){
-        Wechat_GotoRedirect(
-        '<?php echo $appId ?>',      
-        '<?php echo $extend ?>',     
-        '<?php echo $timestamp ?>', 
-        '<?php echo $sign ?>',       
-        '<?php echo $shopId ?>',   
-        '<?php echo $authUrl ?>',   
-        '<?php echo $mac ?>',      
-        '<?php echo $ssid ?>' ); 
-       
-        // var weixinUrl = "weixin://connectToFreeWifi/?apKey=_p33beta&appId='<?php echo $appId ?>'&shopId='<?php echo $shopId ?>'&authUrl='<?php echo urlencode($authUrl) ?>'&extend='<?php echo $extend ?>'&timestamp='<?php echo $timestamp ?>'&sign='<?php echo $sign ?>'";    
-        // window.location=weixinUrl;
-    }
-    </script>
-    <script type="text/javascript">
-    document.addEventListener('visibilitychange', putNoResponse, false);
-</script>
-</div>
-</body>
-</html>
